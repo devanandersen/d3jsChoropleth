@@ -2,21 +2,31 @@
     margin: 0;
     padding: 0;
 }
+
+body {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 1000px;
+    margin-left: 20%;
+}
+
 .visual {
     display: flex;
     align-items: center;
     justify-content: center;
     flex-direction: column;
+    overflow: scroll;
 }
 
 .title {
-    margin-top: 30px;
+    margin-top: 20px;
     font-size: 50px;
     text-align: center;
 }
 
 .subTitle {
-    margin-bottom: 30px;
+    margin-bottom: 20px;
     text-align: center;
 }
 
