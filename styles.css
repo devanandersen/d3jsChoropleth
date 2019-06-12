@@ -1,0 +1,66 @@
+* {
+    margin: 0;
+    padding: 0;
+}
+.visual {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+}
+
+.title {
+    margin-top: 30px;
+    font-size: 50px;
+    text-align: center;
+}
+
+.subTitle {
+    margin-bottom: 30px;
+    text-align: center;
+}
+
+.path {
+    stroke: black;
+    stroke-width: .5px;
+}
+
+.path:hover{
+    fill: black;
+    stroke-width: .5px;
+}
+
+.rect {
+    stroke: black;
+    stroke-width: 1px;
+}
+
+#tooltip {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: absolute;
+    text-align: center;
+    overflow: contain;
+    background: black;
+    color: white;
+    width: auto;
+    height: auto;
+    padding: 10px;
+    font-size: 13px;
+    font-weight: bold;
+    box-shadow: 1px 1px 10px;
+    border: 1px white solid;
+    border-radius: 5px;
+    pointer-events: none;
+}
+
+.source {
+    align-self: flex-end;
+    padding-top: 20px;
+    padding-right: 50px;
+}
+
+.sourceText{
+    font-size: 18px;
+}

@@ -1,0 +1,186 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <title>d3js Choropleth</title>
+    <!-- Required meta tags -->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+    <link rel="stylesheet" href="styles.css">
+    <script src="https://d3js.org/d3.v5.js"></script>
+    <script src="https://unpkg.com/topojson@3"></script>
+  </head>
+  <body>
+    <div class='visual'>
+      <h1 class="title">United States Educational Attainment</h1>
+      <h6 class="subTitle">Percentage of adults age 25 and older with a bachelor's degree or higher (2010-2014)</h6>
+    </div>
+  </body>
+  <script>
+    const margin = {
+      top: 0,
+      right: 0,
+      bottom: 0,
+      left: 0
+    }
+    
+    const h = 600 - margin.top - margin.bottom;
+    const w = 1000 - margin.left - margin.right;
+    padding = 0;
+
+    //Fetch data from 2 urls
+    fetchData = () => {
+      const urls = [
+      'https://raw.githubusercontent.com/no-stack-dub-sack/testable-projects-fcc/master/src/data/choropleth_map/for_user_education.json',
+      'https://raw.githubusercontent.com/no-stack-dub-sack/testable-projects-fcc/master/src/data/choropleth_map/counties.json'
+      ];
+
+      const allRequests = urls.map(url=>
+      fetch(url).then(response => response.json())
+      );
+
+      return Promise.all(allRequests);
+    }
+    fetchData().then(function(arrayOfResponses) {
+      // constants for geosvg
+      const USEducationData = arrayOfResponses[0]
+      const USCountyData = arrayOfResponses[1]
+      const geoPath = d3.geoPath();
+      const eduMax=d3.max(USEducationData, function(d){
+        return d.bachelorsOrHigher;
+      });
+      const eduMin=d3.min(USEducationData, function(d){
+        return d.bachelorsOrHigher;
+      });
+      const svg = d3.select('.visual')
+        .append('svg')
+        .attr('width', w)
+        .attr('height', h)
+        .classed('svg-content',true)
+        .append('g')
+        .attr('transform','translate(' + margin.left + ',' + margin.top + ')');
+
+      // const for color of legend and geo
+      const threshold = d3.scaleThreshold()
+        .domain(d3.range(eduMin,eduMax,(eduMax-eduMin)/8))
+        .range(d3.schemeRdYlGn[9])
+
+      // geosvg
+      svg.selectAll('path')
+        .data(topojson.feature(USCountyData, USCountyData.objects.counties).features)
+        .enter()
+        .append('path')
+        .attr('data-id', (d)=>d.id)
+        .attr('data-edu', function(d) {
+          let store;
+          USEducationData.filter((x)=>{
+            if (x.fips===d.id) store = x.bachelorsOrHigher
+            return store;
+          })
+          return store;
+        })
+        .attr('d',geoPath)
+        .attr('fill',function(d){
+          let store;
+          USEducationData.filter((x)=>{
+            if (x.fips===d.id) store = x.bachelorsOrHigher
+            return store;
+          })
+          return threshold(store);
+        })
+        .attr('class','path')
+        .on('mouseover', function(d,i) {
+            tooltip.transition()
+                .duration(50)
+                .style('opacity','.9')
+                .style('left',d3.event.pageX - 90 + 'px')
+                .style('top',d3.event.pageY - 55 + 'px')
+                tooltip.html(function(){
+                  let store=
+                  USEducationData.filter((x)=>x.fips===d.id)
+
+                  if(store) {
+                    return store[0].area_name + ', ' + store[0].state + ': ' + store[0].bachelorsOrHigher + '%'
+                  }
+                  return 0;
+              })
+        })
+        .on('mouseout', function(d,i) {
+            tooltip.transition()
+                .duration(100)
+                .style('opacity','0')
+        })
+        // source text
+        d3.select('.visual')
+        .append('div')
+        .attr('class','source')
+        .html('<h6 class="sourceText">Source: <a href="https://www.ers.usda.gov/data-products/county-level-data-sets/download-data.aspx">USDA Economic Research Service</a></h6>')
+        
+      // Tooltip
+      const tooltip = d3.select('.visual')
+        .append('div')
+        .attr('id','tooltip')
+        .style('opacity', 0)
+
+      // constants for legend
+      const legendMargin = {
+        top: 50,
+        right: 0,
+        bottom: 0,
+        left: 20
+      }
+      const legendHeight = 150 - legendMargin.top - legendMargin.bottom;
+      const legendWidth = 500 - legendMargin.left - legendMargin.right;
+      const legendPadding = 0;
+      const legendBarHeight = '10px';
+      const xLegend = d3.scaleLinear()
+        .domain([eduMin,eduMax])
+        .range([0,375])
+      const xAxisLegend = d3.axisBottom(xLegend)
+        .tickValues(threshold.domain())
+        .tickFormat(function(d) {return Math.round(d) + '%'})
+      // creating legend
+      const svgLegend = d3.select('.visual')
+        .append('svg')
+        .attr('class','svgLegend')
+        .attr('width',legendWidth)
+        .attr('height',legendHeight)
+        .classed('svg-content',true)
+        .attr('transform','translate(230,-665)')
+        .append('g')
+        .attr('class','legend')
+
+      const gLegend = d3.select('.legend')
+        .append('g')
+        .call(xAxisLegend)
+        .attr('transform','translate(' + legendMargin.left + ',' + legendMargin.top + ')');
+
+      gLegend.selectAll('rect')
+        .data(threshold.range().map(function(color){
+          var d= threshold.invertExtent(color);
+          if(d[0]==null) d[0] = xLegend.domain()[0];
+          if(d[1]==null) d[1] = xLegend.domain()[1];
+          return d;
+        }))
+        .enter().insert('rect','.tick')
+          .attr('x',function(d){
+            return xLegend(d[0]);
+          })
+          .attr('width',function(d){
+            return xLegend(d[1]) - xLegend(d[0]);
+          })
+          .attr('class','rect')
+          .attr('height',legendBarHeight)
+          .attr('transform','translate(.5,-10)')
+          .attr('fill',function(d){return threshold(d[0]);})
+      gLegend.selectAll('.tick')
+          .attr('font-size','14px')
+    })
+
+
+
+
+  </script>
+</html>
