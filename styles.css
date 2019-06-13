@@ -10,6 +10,11 @@ body {
     justify-content: center;
 }
 
+.svgLegend {
+    margin-left: 500px;
+    margin-bottom: -50px;
+}
+
 .visual {
     padding: 20px;
     width: 1000px;

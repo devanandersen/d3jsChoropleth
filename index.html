@@ -44,6 +44,17 @@
       return Promise.all(allRequests);
     }
     fetchData().then(function(arrayOfResponses) {
+      // constants for legend
+      const legendMargin = {
+        top: 50,
+        right: 0,
+        bottom: 0,
+        left: 20
+      }
+      const legendHeight = 125 - legendMargin.top - legendMargin.bottom;
+      const legendWidth = 500 - legendMargin.left - legendMargin.right;
+      const legendPadding = 0;
+      const legendBarHeight = '10px';
       // constants for geosvg
       const USEducationData = arrayOfResponses[0]
       const USCountyData = arrayOfResponses[1]
@@ -54,6 +65,18 @@
       const eduMin=d3.min(USEducationData, function(d){
         return d.bachelorsOrHigher;
       });
+      // creating legend
+      const svgLegend = d3.select('.visual')
+        .append('svg')
+        .attr('class','svgLegend')
+        .attr('width',legendWidth)
+        .attr('height',legendHeight)
+        .classed('svg-content',true)
+        .attr('transform','translate(0,0)')
+        .append('g')
+        .attr('class','legend')
+      
+      // creating svg
       const svg = d3.select('.visual')
         .append('svg')
         .attr('width', w)
@@ -124,33 +147,12 @@
         .attr('id','tooltip')
         .style('opacity', 0)
 
-      // constants for legend
-      const legendMargin = {
-        top: 50,
-        right: 0,
-        bottom: 0,
-        left: 20
-      }
-      const legendHeight = 150 - legendMargin.top - legendMargin.bottom;
-      const legendWidth = 500 - legendMargin.left - legendMargin.right;
-      const legendPadding = 0;
-      const legendBarHeight = '10px';
       const xLegend = d3.scaleLinear()
         .domain([eduMin,eduMax])
         .range([0,375])
       const xAxisLegend = d3.axisBottom(xLegend)
         .tickValues(threshold.domain())
         .tickFormat(function(d) {return Math.round(d) + '%'})
-      // creating legend
-      const svgLegend = d3.select('.visual')
-        .append('svg')
-        .attr('class','svgLegend')
-        .attr('width',legendWidth)
-        .attr('height',legendHeight)
-        .classed('svg-content',true)
-        .attr('transform','translate(500,-685)')
-        .append('g')
-        .attr('class','legend')
 
       const gLegend = d3.select('.legend')
         .append('g')
